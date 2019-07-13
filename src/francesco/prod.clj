@@ -19,8 +19,8 @@
 (defmacro with-producer
   "Execute `body` binding `producer` to a Kafka producer.  The
   `producer` is automatically closed on exit of the code block."
-  [[producer config] & body]
-  `(with-open [~producer (producer/make-producer ~config)]
+  [[producer config & make-producer-options] & body]
+  `(with-open [~producer (producer/make-producer ~config ~@make-producer-options)]
      ~@body))
 
 (defn producer-send [producer topic key value & {:keys [partition]}]
@@ -60,8 +60,8 @@
   "Execute `body` binding `channel` to a Kafka queue.  See
   `make-producer-channel` for further details.  The `channel` is
   automatically closed, upon exit of the code block."
-  [[channel config topic key-fn] & body]
-  `(with-producer [producer# ~config]
+  [[channel config topic key-fn & make-producer-options] & body]
+  `(with-producer [producer# ~config ~@ make-producer-options]
      (let [~channel (make-producer-channel producer# ~topic ~key-fn)]
        (try
          (do ~@body)

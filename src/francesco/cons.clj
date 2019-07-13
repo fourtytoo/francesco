@@ -118,7 +118,7 @@
   `channel` (and thus the consumer) is automatically closed."
   [[channel config & {:keys [topic partition offset] :as args}] & body]
   (let [consumer (gensym "consumer")]
-    `(with-consumer [~consumer ~config]
+    `(with-consumer [~consumer ~config ~@((juxt :key-deserializer :value-deserializer :options) args)]
        ~(if partition
           `(kafka/consumer-assign ~consumer [~(select-keys args [:topic :partition])])
           `(kafka/consumer-subscribe ~consumer [~topic]))
