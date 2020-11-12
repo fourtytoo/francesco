@@ -8,6 +8,5 @@
                  ;; [cprop "0.1.17"]
                  [org.clojure/tools.logging "1.1.0"]
                  [clj-kafka.franzy/core "2.0.7"]
-                 [clj-kafka.franzy/admin "2.0.7"]]
-  ;; :repl-options {:init-ns francesco.core}
-  )
+                 [clj-kafka.franzy/common "2.0.7"]
+                 [clj-kafka.franzy/admin "2.0.7"]])

@@ -1,11 +1,30 @@
 (ns francesco.cons
   (:require [clojure.core.async :as a]
             [franzy.clients.codec :as codec]
-            [franzy.clients.consumer.client :as consumer]
-            [franzy.clients.consumer.protocols :as cprot])
-  (:import [franzy.clients.consumer.types ConsumerRecord]))
+            [franzy.clients.consumer.protocols :as cprot]
+            [franzy.clients.consumer.defaults :refer [make-default-consumer-options]]
+            [franzy.clients.consumer.callbacks :refer [consumer-rebalance-listener]]
+            [franzy.serialization.deserializers :as des]
+            [franzy.clients.consumer.client :as cli]
+            [francesco.util :refer :all])
+  (:import [franzy.clients.consumer.types ConsumerRecord]
+           [org.apache.kafka.clients.consumer KafkaConsumer]))
 
 
+(def edn-deserializer (des/edn-deserializer))
+
+(defn make-consumer [config & [key-deserializer value-deserializer options]]
+  (let [options (if (:rebalance-listener-callback options)
+                  (update options :rebalance-listener-callback
+                          (fn [cb]
+                            (if (fn? cb)
+                              (consumer-rebalance-listener cb)
+                              cb)))
+                  options)]
+    (-> (->prop config)
+        (KafkaConsumer. (or key-deserializer edn-deserializer)
+                        (or value-deserializer edn-deserializer))
+        (cli/->FranzConsumer (make-default-consumer-options options)))))
 
 (defn consumer-assign [consumer topic-partitions]
   (locking consumer
@@ -90,7 +109,7 @@
   "Execute `body` binding `consumer` to a Kafka consumer.  Upon exit of
   the code block, the `consumer` is automatically closed."
   [[consumer config & rest] & body]
-  `(with-open [~consumer (consumer/make-consumer ~config ~@rest)]
+  `(with-open [~consumer (make-consumer ~config ~@rest)]
      ~@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

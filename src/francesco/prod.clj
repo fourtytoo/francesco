@@ -1,7 +1,12 @@
 (ns francesco.prod
   (:require [clojure.core.async :as a]
             [franzy.clients.producer.client :as producer]
-            [franzy.clients.producer.protocols :as pprot]))
+            [franzy.serialization.serializers :as ser]
+            [franzy.clients.producer.defaults :refer [make-default-producer-options]]
+            [franzy.clients.producer.protocols :as pprot]
+            [clojure.string :as s])
+  (:import [franzy.clients.producer.client FranzProducer]
+           [org.apache.kafka.clients.producer KafkaProducer]))
 
 
 (defn assocnn
@@ -14,7 +19,33 @@
       (recur m (first kvs) (second kvs) (nnext kvs))
       m)))
 
+(defn ->prop
+  "Convert a clojure map to something compatible with Java property
+  maps."
+  [obj]
+  (cond (keyword? obj) (name obj)
+        (map? obj) (->> obj
+                        (map (juxt (comp name key)
+                                   (comp ->prop val)))
+                        (into {}))
+        (coll? obj) (->> obj
+                         (map ->prop)
+                         (s/join ","))
+        :else (str obj)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def edn-serializer (ser/edn-serializer))
+
+(defn make-producer [config & [key-serializer value-serializer options]]
+  (-> (->prop config)
+      (KafkaProducer.
+       (or key-serializer
+           edn-serializer)
+       (or value-serializer
+           edn-serializer))
+      (FranzProducer.
+       (make-default-producer-options options))))
 
 (defmacro with-producer
   "Execute `body` binding `producer` to a Kafka producer.  The
