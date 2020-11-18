@@ -24,3 +24,7 @@
                          (map ->prop)
                          (s/join ","))
         :else (str obj)))
+
+(defn as-properties [map]
+  (doto (java.util.Properties.)
+    (.putAll (francesco.util/->prop map))))
