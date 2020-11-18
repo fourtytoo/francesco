@@ -139,10 +139,10 @@
   (let [consumer (gensym "consumer")]
     `(with-consumer [~consumer ~config ~@((juxt :key-deserializer :value-deserializer :options) args)]
        ~(if partition
-          `(kafka/consumer-assign ~consumer [~(select-keys args [:topic :partition])])
-          `(kafka/consumer-subscribe ~consumer [~topic]))
+          `(consumer-assign ~consumer [~(select-keys args [:topic :partition])])
+          `(consumer-subscribe ~consumer [~topic]))
        ~@(when (and partition offset)
-           `((kafka/consumer-seek c ~(select-keys args [:topic :partition]) ~offset)))
+           `((consumer-seek c ~(select-keys args [:topic :partition]) ~offset)))
        (let [~channel (make-consumer-channel ~consumer)]
          (try
            (do ~@body)
