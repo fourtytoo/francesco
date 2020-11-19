@@ -13,6 +13,18 @@
 
 (def edn-deserializer (des/edn-deserializer))
 
+(defn consumer-record->map
+  "Convert a `org.apache.kafka.clients.consumer.ConsumerRecord` (not
+  Franzy's one) into a Clojure map."
+  [cr]
+  {:topic (.topic cr)
+   :partition (.partition cr)
+   :offset (.offset cr)
+   :key (.key cr)
+   :value (.value cr)
+   :timestamp (.timestamp cr)
+   :headers (.headers cr)})
+
 (defn make-consumer [config & [key-deserializer value-deserializer options]]
   (let [options (if (:rebalance-listener-callback options)
                   (update options :rebalance-listener-callback

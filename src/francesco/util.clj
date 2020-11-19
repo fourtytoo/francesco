@@ -28,15 +28,3 @@
 (defn as-properties [map]
   (doto (java.util.Properties.)
     (.putAll (francesco.util/->prop map))))
-
-(defn consumer-record->map
-  "Convert a `org.apache.kafka.clients.consumer.ConsumerRecord` into a
-  Clojure map."
-  [cr]
-  {:topic (.topic cr)
-   :partition (.partition cr)
-   :offset (.offset cr)
-   :key (.key cr)
-   :value (.value cr)
-   :timestamp (.timestamp cr)
-   :headers (.headers cr)})

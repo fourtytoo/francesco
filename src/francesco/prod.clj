@@ -6,10 +6,14 @@
             [franzy.clients.producer.client :as cli]
             [francesco.util :refer :all])
   (:import #_[franzy.clients.producer.client FranzProducer]
-           [org.apache.kafka.clients.producer KafkaProducer]))
+           [org.apache.kafka.clients.producer KafkaProducer ProducerRecord]))
 
 
 (def edn-serializer (ser/edn-serializer))
+
+(defn map->producer-record [m]
+  ;; ProducerRecord(String topic, Integer partition, Long timestamp, K key, V value, Iterable<Header> headers)
+  (ProducerRecord. (:topic m) (:partition m) (:timestamp m) (:key m) (:value m) (:headers m)))
 
 (defn make-producer [config & [key-serializer value-serializer options]]
   (-> (->prop config)
