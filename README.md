@@ -6,8 +6,6 @@ A thin Clojure wrapper around the Kafka library.
 
 Add to your project file the dependency:
 
-   [fourtytoo/francesco "0.1.0-SNAPSHOT"]
-
 [![Clojars Project](https://img.shields.io/clojars/v/fourtytoo/francesco.svg)](https://clojars.org/fourtytoo/francesco)
 
 ## License
